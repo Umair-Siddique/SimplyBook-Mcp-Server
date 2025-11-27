@@ -2,7 +2,9 @@ import logging
 import sys
 import os
 import asyncio
+from pathlib import Path
 from typing import Dict, Any
+from dotenv import load_dotenv
 from fastmcp import FastMCP
 from simplybook.auth.routes import AuthRoutes
 from simplybook.bookings.routes import BookingsRoutes
@@ -18,6 +20,27 @@ from simplybook.products.routes import ProductsRoutes
 from simplybook.subscription.routes import SubscriptionRoutes
 from simplybook.payments.routes import PaymentsRoutes
 from simplybook.exceptions import SimplyBookException
+
+def load_environment() -> None:
+    """Load environment variables from .env file"""
+    # Get the project root directory (parent of src/)
+    project_root = Path(__file__).parent.parent
+    env_path = project_root / '.env'
+    
+    # Try to load .env file
+    if env_path.exists():
+        load_dotenv(env_path)
+        logging.getLogger(__name__).info(f"Loaded .env file from {env_path}")
+    else:
+        # Also try parent directory (in case .env is there)
+        parent_env = project_root.parent / '.env'
+        if parent_env.exists():
+            load_dotenv(parent_env)
+            logging.getLogger(__name__).info(f"Loaded .env file from {parent_env}")
+        else:
+            # Try loading from current directory as fallback
+            load_dotenv()
+            logging.getLogger(__name__).info("Attempted to load .env from current directory")
 
 def setup_logging() -> None:
     logging.basicConfig(
@@ -43,7 +66,9 @@ def get_credentials() -> tuple:
 def get_server_config() -> Dict[str, Any]:
     """Obtener configuración del servidor SSE desde variables de entorno"""
     host = os.getenv('MCP_HOST', '0.0.0.0')
-    port = int(os.getenv('MCP_PORT', '8001'))  # Puerto por defecto para SSE
+    # Render y otros PaaS suelen exponer el puerto en la variable PORT.
+    # Si no existe, se respeta MCP_PORT y, en última instancia, el valor por defecto.
+    port = int(os.getenv('PORT') or os.getenv('MCP_PORT', '8001'))
     
     return {
         'host': host,
@@ -101,6 +126,9 @@ def main() -> None:
     
     try:
         logger.info("Initializing SimplyBook MCP server with SSE...")
+        
+        # Load environment variables from .env file
+        load_environment()
         
         # Obtener credenciales y configuración
         company, login, password = get_credentials()

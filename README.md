@@ -87,6 +87,48 @@ El servidor requiere las siguientes variables de entorno según la [documentaci�
    python src/main.py
    ```
 
+### Opción 3: Ejecución con Ngrok (Acceso Público)
+
+Para exponer el servidor públicamente usando ngrok:
+
+1. **Instala ngrok:**
+   - Descarga desde [ngrok.com](https://ngrok.com/download)
+   - Autentica: `ngrok config add-authtoken YOUR_AUTH_TOKEN`
+
+2. **Ejecuta el servidor con ngrok:**
+   ```bash
+   # Opción A: Script Python (recomendado, multiplataforma)
+   python start-server-with-ngrok.py
+   
+   # Opción B: Script Bash (Linux/macOS)
+   chmod +x start-server-with-ngrok.sh
+   ./start-server-with-ngrok.sh
+   
+   # Opción C: Manual
+   # Terminal 1: Inicia el servidor
+   python src/main.py
+   
+   # Terminal 2: Inicia ngrok
+   ngrok http 8001
+   ```
+
+3. **Usa la URL pública de ngrok en tu cliente:**
+   ```json
+   {
+     "mcpServers": {
+       "simplybook": {
+         "command": "npx",
+         "args": [
+           "mcp-remote",
+           "https://YOUR_NGROK_URL.ngrok-free.app/sse/"
+         ]
+       }
+     }
+   }
+   ```
+
+📖 **Ver [NGROK_SETUP.md](NGROK_SETUP.md) para más detalles**
+
 ## Estructura del Proyecto
 
 ```
