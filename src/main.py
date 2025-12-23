@@ -19,6 +19,7 @@ from simplybook.notes.routes import NotesRoutes
 from simplybook.products.routes import ProductsRoutes
 from simplybook.subscription.routes import SubscriptionRoutes
 from simplybook.payments.routes import PaymentsRoutes
+from simplybook.intake_forms.routes import IntakeFormsRoutes
 from simplybook.exceptions import SimplyBookException
 
 def load_environment() -> None:
@@ -98,7 +99,8 @@ def register_routers(mcp: FastMCP, company: str, login: str, password: str) -> N
         NotesRoutes(company, login, password),
         ProductsRoutes(company, login, password),
         SubscriptionRoutes(company, login, password),
-        PaymentsRoutes(company, login, password)
+        PaymentsRoutes(company, login, password),
+        IntakeFormsRoutes(company, login, password)
     ]
 
     for router in routers:

@@ -35711,3 +35711,39 @@
   }
 }
 2025-11-27 23:02:03,248 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-12-04 18:26:22,298 - __main__ - INFO - Initializing SimplyBook MCP server with SSE...
+2025-12-04 18:26:22,301 - __main__ - INFO - Loaded .env file from c:\Users\umair\Downloads\simplybook-mcp\.env
+2025-12-04 18:26:22,302 - __main__ - INFO - Credentials loaded successfully
+2025-12-04 18:26:22,302 - __main__ - INFO - SSE Server configuration: {'host': '0.0.0.0', 'port': 10000}
+2025-12-04 18:26:22,316 - __main__ - INFO - Registering routers...
+2025-12-04 18:26:22,641 - __main__ - INFO - All routers registered successfully
+2025-12-04 18:26:22,642 - __main__ - INFO - Starting SSE server on port 10000...
+2025-12-04 18:26:22,645 - __main__ - INFO - Starting SSE server on 0.0.0.0:10000
+2025-12-04 18:26:23,652 - __main__ - INFO - Server initialization complete, ready to accept connections
+2025-12-04 18:30:45,860 - __main__ - INFO - Initializing SimplyBook MCP server with SSE...
+2025-12-04 18:30:45,862 - __main__ - INFO - Loaded .env file from C:\Users\umair\Downloads\simplybook-mcp\.env
+2025-12-04 18:30:45,863 - __main__ - INFO - Credentials loaded successfully
+2025-12-04 18:30:45,863 - __main__ - INFO - SSE Server configuration: {'host': '0.0.0.0', 'port': 10000}
+2025-12-04 18:30:45,874 - __main__ - INFO - Registering routers...
+2025-12-04 18:30:46,147 - __main__ - INFO - All routers registered successfully
+2025-12-04 18:30:46,147 - __main__ - INFO - Starting SSE server on port 10000...
+2025-12-04 18:30:46,149 - __main__ - INFO - Starting SSE server on 0.0.0.0:10000
+2025-12-04 18:30:47,159 - __main__ - INFO - Server initialization complete, ready to accept connections
+2025-12-04 18:36:46,263 - __main__ - INFO - Initializing SimplyBook MCP server with SSE...
+2025-12-04 18:36:46,265 - __main__ - INFO - Loaded .env file from c:\Users\umair\Downloads\simplybook-mcp\.env
+2025-12-04 18:36:46,266 - __main__ - INFO - Credentials loaded successfully
+2025-12-04 18:36:46,266 - __main__ - INFO - SSE Server configuration: {'host': '0.0.0.0', 'port': 10000}
+2025-12-04 18:36:46,279 - __main__ - INFO - Registering routers...
+2025-12-04 18:36:46,542 - __main__ - INFO - All routers registered successfully
+2025-12-04 18:36:46,543 - __main__ - INFO - Starting SSE server on port 10000...
+2025-12-04 18:36:46,545 - __main__ - INFO - Starting SSE server on 0.0.0.0:10000
+2025-12-04 18:36:47,546 - __main__ - INFO - Server initialization complete, ready to accept connections
+2025-12-04 18:42:13,645 - __main__ - INFO - Initializing SimplyBook MCP server with SSE...
+2025-12-04 18:42:13,647 - __main__ - INFO - Loaded .env file from c:\Users\umair\Downloads\simplybook-mcp\.env
+2025-12-04 18:42:13,647 - __main__ - INFO - Credentials loaded successfully
+2025-12-04 18:42:13,647 - __main__ - INFO - SSE Server configuration: {'host': '0.0.0.0', 'port': 10000}
+2025-12-04 18:42:13,660 - __main__ - INFO - Registering routers...
+2025-12-04 18:42:13,886 - __main__ - INFO - All routers registered successfully
+2025-12-04 18:42:13,886 - __main__ - INFO - Starting SSE server on port 10000...
+2025-12-04 18:42:13,888 - __main__ - INFO - Starting SSE server on 0.0.0.0:10000
+2025-12-04 18:42:14,889 - __main__ - INFO - Server initialization complete, ready to accept connections
