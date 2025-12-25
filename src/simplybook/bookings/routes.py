@@ -65,6 +65,12 @@ class BookingsRoutes(BaseRoutes):
                     return {"error": "No se pudo autenticar"}
                     
                 self.client = BookingsClient(self.get_auth_headers())
+                
+                # Convert 'date' parameter to 'date_from' and 'date_to' for client compatibility
+                # If 'date' is provided, it filters bookings for that specific date
+                date_from_param = date if date else None
+                date_to_param = date if date else None
+                
                 result = await self.client.get_booking_list(
                     page=page,
                     on_page=on_page,
@@ -73,7 +79,8 @@ class BookingsRoutes(BaseRoutes):
                     services=services,
                     providers=providers,
                     client_id=client_id,
-                    date=date,
+                    date_from=date_from_param,
+                    date_to=date_to_param,
                     search=search,
                     additional_fields=additional_fields
                 )
