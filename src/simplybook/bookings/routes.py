@@ -195,22 +195,35 @@ class BookingsRoutes(BaseRoutes):
                 return {"error": f"Error creando reserva: {str(e)}"}
 
         @mcp.tool(
-            description="Editar una reserva existente",
+            description="Editar una reserva existente. Para cambiar la fecha/hora, debes incluir service_id, provider_id, start_datetime y end_datetime.",
             tags={"bookings", "edit"}
         )
         async def edit_booking(
             booking_id: Annotated[str, Field(description="ID de la reserva a editar")],
             booking_data: Annotated[Dict[str, Any], Field(
-                description="Datos actualizados de la reserva",
+                description="Datos actualizados de la reserva. REQUERIDO para cambiar fecha/hora: service_id, provider_id, start_datetime, end_datetime. Usa get_booking_details primero para obtener estos valores.",
                 example={
-                    "service_id": "123",
+                    "service_id": "3",
+                    "provider_id": "2",
                     "start_datetime": "2024-03-20 10:00:00",
-                    "provider_id": "789",
-                    "notes": "Notas actualizadas"
+                    "end_datetime": "2024-03-20 11:15:00"
                 }
             )]
         ) -> Dict[str, Any]:
-            """Editar una reserva existente"""
+            """
+            Editar una reserva existente.
+            
+            IMPORTANTE: Para cambiar fecha/hora de una reserva, debes proporcionar:
+            - service_id: ID del servicio (obtener del booking original)
+            - provider_id: ID del proveedor (obtener del booking original)
+            - start_datetime: Nueva fecha/hora de inicio (YYYY-MM-DD HH:mm:ss)
+            - end_datetime: Nueva fecha/hora de fin (YYYY-MM-DD HH:mm:ss, calculado según duración del servicio)
+            
+            Flujo recomendado:
+            1. Llamar get_booking_details(booking_id) para obtener service_id, provider_id, duración
+            2. Calcular end_datetime = start_datetime + duración del servicio
+            3. Llamar edit_booking con todos los campos requeridos
+            """
             try:
                 if not await self.ensure_authenticated():
                     return {"error": "No se pudo autenticar"}
