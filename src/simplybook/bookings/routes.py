@@ -27,7 +27,7 @@ class BookingsRoutes(BaseRoutes):
                 return {"error": f"Error obteniendo reservas: {str(e)}"}
 
         @mcp.tool(
-            description="Obtener lista de reservas con filtros avanzados. Use 'search' to find bookings by client email, phone, name, or booking code.",
+            description="Obtener lista de reservas con filtros avanzados",
             tags={"bookings", "filters"}
         )
         async def get_booking_list(
@@ -38,9 +38,8 @@ class BookingsRoutes(BaseRoutes):
             services: Optional[Annotated[List[str], Field(description="Lista de IDs de servicios para filtrar")]] = None,
             providers: Optional[Annotated[List[str], Field(description="Lista de IDs de proveedores para filtrar")]] = None,
             client_id: Optional[Annotated[str, Field(description="ID del cliente para filtrar")]] = None,
-            date_from: Optional[Annotated[str, Field(description="Fecha desde para filtrar (YYYY-MM-DD)", pattern="^\\d{4}-\\d{2}-\\d{2}$")]] = None,
-            date_to: Optional[Annotated[str, Field(description="Fecha hasta para filtrar (YYYY-MM-DD)", pattern="^\\d{4}-\\d{2}-\\d{2}$")]] = None,
-            search: Optional[Annotated[str, Field(description="String de búsqueda (por código, email, teléfono, nombre del cliente)")]] = None,
+            date: Optional[Annotated[str, Field(description="Fecha para filtrar (YYYY-MM-DD)", pattern="^\\d{4}-\\d{2}-\\d{2}$")]] = None,
+            search: Optional[Annotated[str, Field(description="String de búsqueda (por código, datos del cliente)")]] = None,
             additional_fields: Optional[Dict[str, Any]] = None
         ) -> Dict[str, Any]:
             """
@@ -54,13 +53,12 @@ class BookingsRoutes(BaseRoutes):
                 services: Lista de IDs de servicios para filtrar
                 providers: Lista de IDs de proveedores para filtrar
                 client_id: ID del cliente para filtrar
-                date_from: Fecha desde para filtrar (YYYY-MM-DD)
-                date_to: Fecha hasta para filtrar (YYYY-MM-DD)
-                search: String de búsqueda (por código, email, teléfono, nombre del cliente)
+                date: Fecha para filtrar (YYYY-MM-DD)
+                search: String de búsqueda (por código, datos del cliente)
                 additional_fields: Campos adicionales para filtrar
             
             Returns:
-                Dict con la respuesta paginada de reservas. Each booking has 'id' (use for cancel/edit) and 'code' (ticket code).
+                Dict con la respuesta paginada de reservas
             """
             try:
                 if not await self.ensure_authenticated():
@@ -75,8 +73,7 @@ class BookingsRoutes(BaseRoutes):
                     services=services,
                     providers=providers,
                     client_id=client_id,
-                    date_from=date_from,
-                    date_to=date_to,
+                    date=date,
                     search=search,
                     additional_fields=additional_fields
                 )
