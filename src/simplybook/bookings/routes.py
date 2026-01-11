@@ -33,13 +33,13 @@ class BookingsRoutes(BaseRoutes):
         async def get_booking_list(
             page: Optional[Annotated[int, Field(description="Número de página para paginación", ge=1)]] = None,
             on_page: Optional[Annotated[int, Field(description="Elementos por página", ge=1)]] = None,
-            upcoming_only: Optional[Annotated[bool, Field(description="Solo reservas futuras")]] = None,
+            upcoming_only: Optional[Annotated[bool, Field(description="Solo reservas futuras. IMPORTANTE: Puede tener límite de rango de fechas. Si no encuentras una reserva lejana en el futuro, omite este filtro o usa date_from/date_to específicos.")]] = None,
             status: Optional[Annotated[str, Field(description="Estado de la reserva", pattern="^(confirmed|confirmed_pending|pending|canceled)$")]] = None,
             services: Optional[Annotated[List[str], Field(description="Lista de IDs de servicios para filtrar")]] = None,
             providers: Optional[Annotated[List[str], Field(description="Lista de IDs de proveedores para filtrar")]] = None,
             client_id: Optional[Annotated[str, Field(description="ID del cliente para filtrar")]] = None,
             date: Optional[Annotated[str, Field(description="Fecha para filtrar (YYYY-MM-DD)", pattern="^\\d{4}-\\d{2}-\\d{2}$")]] = None,
-            search: Optional[Annotated[str, Field(description="String de búsqueda (por código, datos del cliente)")]] = None,
+            search: Optional[Annotated[str, Field(description="String de búsqueda (por código, nombre, email, teléfono). NOTA: Para buscar por email/teléfono específico usa find_bookings_by_client_contact. Para código de reserva usa find_booking_by_code.")]] = None,
             additional_fields: Optional[Dict[str, Any]] = None
         ) -> Dict[str, Any]:
             """
@@ -371,3 +371,131 @@ class BookingsRoutes(BaseRoutes):
                 }
             except Exception as e:
                 return {"error": f"Error obteniendo datos del calendario: {str(e)}"}
+
+        @mcp.tool(
+            description="Buscar reservas de un cliente por email o teléfono. Primero busca el cliente, luego retorna todas sus reservas.",
+            tags={"bookings", "search", "client"}
+        )
+        async def find_bookings_by_client_contact(
+            email_or_phone: Annotated[str, Field(description="Email o teléfono del cliente")],
+            upcoming_only: Optional[Annotated[bool, Field(description="Solo reservas futuras (default: False para buscar todas)")]] = False,
+            status: Optional[Annotated[str, Field(description="Estado de la reserva", pattern="^(confirmed|confirmed_pending|pending|canceled)$")]] = None
+        ) -> Dict[str, Any]:
+            """
+            Buscar todas las reservas de un cliente usando su email o teléfono.
+            
+            Este método hace dos pasos automáticamente:
+            1. Busca el cliente por email/teléfono
+            2. Obtiene todas sus reservas
+            
+            Args:
+                email_or_phone: Email o teléfono del cliente
+                upcoming_only: Solo reservas futuras (default: False para buscar todas)
+                status: Filtrar por estado
+                
+            Returns:
+                Dict con el cliente encontrado y sus reservas
+            """
+            try:
+                if not await self.ensure_authenticated():
+                    return {"error": "No se pudo autenticar"}
+                    
+                # Buscar cliente
+                from ..clients.client import ClientsClient
+                clients_client = ClientsClient(self.get_auth_headers())
+                clients_result = await clients_client.get_clients(search=email_or_phone)
+                
+                if not clients_result.get("data") or len(clients_result["data"]) == 0:
+                    return {
+                        "success": True,
+                        "bookings": [],
+                        "client": None,
+                        "message": f"No se encontró ningún cliente con email/teléfono: {email_or_phone}"
+                    }
+                
+                # Tomar el primer cliente encontrado
+                client = clients_result["data"][0]
+                client_id = str(client["id"])
+                
+                # Buscar reservas del cliente sin upcoming_only por defecto
+                self.client = BookingsClient(self.get_auth_headers())
+                result = await self.client.get_booking_list(
+                    client_id=client_id,
+                    upcoming_only=upcoming_only,
+                    status=status,
+                    on_page=100  # Obtener más resultados
+                )
+                
+                bookings = result.get("data", [])
+                
+                return {
+                    "success": True,
+                    "client": client,
+                    "bookings": bookings,
+                    "count": len(bookings),
+                    "metadata": result.get("metadata", {}),
+                    "message": f"Encontradas {len(bookings)} reservas para {client.get('name', 'cliente')}"
+                }
+            except Exception as e:
+                return {"error": f"Error buscando reservas por contacto: {str(e)}"}
+
+        @mcp.tool(
+            description="Buscar una reserva específica por su código de reserva (ej: 15m7ieuoj). Busca en TODAS las reservas sin filtros de fecha.",
+            tags={"bookings", "search", "code"}
+        )
+        async def find_booking_by_code(
+            booking_code: Annotated[str, Field(description="Código de reserva (ej: 15m7ieuoj)")]
+        ) -> Dict[str, Any]:
+            """
+            Buscar una reserva por su código único.
+            
+            Este método busca sin filtros de fecha (upcoming_only=False) para encontrar 
+            cualquier reserva con ese código, independientemente de cuándo sea.
+            
+            Args:
+                booking_code: Código de reserva
+                
+            Returns:
+                Dict con la reserva encontrada o mensaje si no existe
+            """
+            try:
+                if not await self.ensure_authenticated():
+                    return {"error": "No se pudo autenticar"}
+                    
+                self.client = BookingsClient(self.get_auth_headers())
+                
+                # Buscar sin filtros de fecha para encontrar cualquier reserva con ese código
+                result = await self.client.get_booking_list(
+                    search=booking_code,
+                    on_page=100  # Aumentar límite por si hay muchos resultados
+                )
+                
+                bookings = result.get("data", [])
+                
+                # Filtrar por coincidencia exacta del código
+                matching_bookings = [
+                    b for b in bookings 
+                    if b.get("code", "").lower() == booking_code.lower()
+                ]
+                
+                if matching_bookings:
+                    booking = matching_bookings[0]
+                    return {
+                        "success": True,
+                        "booking": booking,
+                        "booking_id": booking.get("id"),
+                        "found": True,
+                        "message": f"Reserva encontrada: {booking.get('code')} - {booking.get('service', {}).get('name', 'N/A')}"
+                    }
+                else:
+                    return {
+                        "success": True,
+                        "booking": None,
+                        "found": False,
+                        "message": f"No se encontró reserva con código exacto: {booking_code}",
+                        "search_returned": len(bookings),
+                        "suggestion": "Verifica que el código sea correcto. Si el problema persiste, intenta buscar por email/teléfono del cliente."
+                    }
+                    
+            except Exception as e:
+                return {"error": f"Error buscando reserva por código: {str(e)}"}
