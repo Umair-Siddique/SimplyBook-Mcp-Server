@@ -100,6 +100,7 @@ class BookingsRoutes(BaseRoutes):
             provider_id: Annotated[str, Field(description="ID del proveedor")],
             client_id: Annotated[str, Field(description="ID del cliente")],
             start_datetime: Annotated[str, Field(description="Fecha y hora de inicio (YYYY-MM-DD HH:mm:ss)", pattern="^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$")],
+            end_datetime: Annotated[str, Field(description="Fecha y hora de fin (YYYY-MM-DD HH:mm:ss). REQUERIDO. Debe ser start_datetime + duración del servicio en minutos.", pattern="^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$")],
             location_id: Optional[Annotated[int, Field(description="ID de la ubicación")]] = None,
             category_id: Optional[Annotated[int, Field(description="ID de la categoría")]] = None,
             count: Optional[Annotated[int, Field(description="Cantidad para reserva grupal", ge=1)]] = 1,
@@ -131,6 +132,7 @@ class BookingsRoutes(BaseRoutes):
                 provider_id: ID del proveedor
                 client_id: ID del cliente
                 start_datetime: Fecha y hora de inicio (YYYY-MM-DD HH:mm:ss)
+                end_datetime: Fecha y hora de fin (YYYY-MM-DD HH:mm:ss) - REQUERIDO
                 location_id: ID de la ubicación (opcional)
                 category_id: ID de la categoría (opcional)
                 count: Cantidad para reserva grupal (opcional, default 1)
@@ -155,6 +157,7 @@ class BookingsRoutes(BaseRoutes):
                     "provider_id": provider_id,
                     "client_id": client_id,
                     "start_datetime": start_datetime,
+                    "end_datetime": end_datetime,
                     "count": count
                 }
                 
