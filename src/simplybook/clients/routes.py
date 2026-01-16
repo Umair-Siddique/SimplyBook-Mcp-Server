@@ -3,6 +3,7 @@ from ..base_routes import BaseRoutes
 from .client import ClientsClient
 from pydantic import Field
 from typing import Annotated
+import httpx
 
 class ClientsRoutes(BaseRoutes):
     def register_tools(self, mcp):
@@ -83,7 +84,23 @@ class ClientsRoutes(BaseRoutes):
                     "result": result
                 }
             except Exception as e:
-                return {"error": f"Error creando cliente: {str(e)}"}
+                error_details = {"error": f"Error creando cliente: {str(e)}"}
+                
+                # If it's an HTTP error, try to extract the response body
+                if isinstance(e, httpx.HTTPStatusError):
+                    try:
+                        error_body = e.response.json()
+                        error_details["error_details"] = error_body
+                        error_details["status_code"] = e.response.status_code
+                        # Create a more detailed error message
+                        if isinstance(error_body, dict):
+                            api_message = error_body.get("message") or error_body.get("error") or str(error_body)
+                            error_details["error"] = f"API Error ({e.response.status_code}): {api_message}"
+                    except:
+                        error_details["error_details"] = e.response.text if hasattr(e.response, 'text') else str(e)
+                        error_details["status_code"] = e.response.status_code if hasattr(e, 'response') else None
+                
+                return error_details
 
         @mcp.tool(
             description="Editar un cliente existente",
@@ -115,7 +132,23 @@ class ClientsRoutes(BaseRoutes):
                     "result": result
                 }
             except Exception as e:
-                return {"error": f"Error editando cliente: {str(e)}"}
+                error_details = {"error": f"Error editando cliente: {str(e)}"}
+                
+                # If it's an HTTP error, try to extract the response body
+                if isinstance(e, httpx.HTTPStatusError):
+                    try:
+                        error_body = e.response.json()
+                        error_details["error_details"] = error_body
+                        error_details["status_code"] = e.response.status_code
+                        # Create a more detailed error message
+                        if isinstance(error_body, dict):
+                            api_message = error_body.get("message") or error_body.get("error") or str(error_body)
+                            error_details["error"] = f"API Error ({e.response.status_code}): {api_message}"
+                    except:
+                        error_details["error_details"] = e.response.text if hasattr(e.response, 'text') else str(e)
+                        error_details["status_code"] = e.response.status_code if hasattr(e, 'response') else None
+                
+                return error_details
 
         @mcp.tool(
             description="Eliminar un cliente",

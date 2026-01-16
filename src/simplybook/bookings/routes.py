@@ -3,6 +3,7 @@ from ..base_routes import BaseRoutes
 from .client import BookingsClient
 from pydantic import Field
 from typing import Annotated
+import httpx
 
 class BookingsRoutes(BaseRoutes):
     def register_tools(self, mcp):
@@ -195,7 +196,23 @@ class BookingsRoutes(BaseRoutes):
                     "result": result
                 }
             except Exception as e:
-                return {"error": f"Error creando reserva: {str(e)}"}
+                error_details = {"error": f"Error creando reserva: {str(e)}"}
+                
+                # If it's an HTTP error, try to extract the response body
+                if isinstance(e, httpx.HTTPStatusError):
+                    try:
+                        error_body = e.response.json()
+                        error_details["error_details"] = error_body
+                        error_details["status_code"] = e.response.status_code
+                        # Create a more detailed error message
+                        if isinstance(error_body, dict):
+                            api_message = error_body.get("message") or error_body.get("error") or str(error_body)
+                            error_details["error"] = f"API Error ({e.response.status_code}): {api_message}"
+                    except:
+                        error_details["error_details"] = e.response.text if hasattr(e.response, 'text') else str(e)
+                        error_details["status_code"] = e.response.status_code if hasattr(e, 'response') else None
+                
+                return error_details
 
         @mcp.tool(
             description="Editar una reserva existente. Para cambiar la fecha/hora, debes incluir service_id, provider_id, start_datetime y end_datetime.",

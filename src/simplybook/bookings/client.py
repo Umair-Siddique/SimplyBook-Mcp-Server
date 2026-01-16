@@ -126,6 +126,7 @@ class BookingsClient:
             BookingResultEntity con el resultado de la reserva
             
         Throws:
+            httpx.HTTPStatusError: Si la respuesta tiene un código de error HTTP
             AccessDenied: Si el usuario no tiene acceso a la reserva
             BadRequest: Si los datos proporcionados son inválidos
         """
@@ -134,6 +135,7 @@ class BookingsClient:
                 "/bookings", 
                 json=booking_data
             )
+            # This will raise httpx.HTTPStatusError if status is 4xx or 5xx
             response.raise_for_status()
             return response.json()
 
